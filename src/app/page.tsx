@@ -11,7 +11,7 @@ export default function Home() {
   const [url, setUrl] = useState('')
   const router = useRouter()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (url) {
       router.push(`/video?url=${encodeURIComponent(url)}`)
@@ -27,7 +27,7 @@ export default function Home() {
             <span className="ml-2 text-3xl font-bold text-red-500">OVERLAP</span>
           </div>
           <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
-            <Image src="/placeholder.svg?height=32&width=32" alt="User Avatar" width={32} height={32} className="rounded-full" />
+            Sign In
           </Button>
         </div>
       </header>
@@ -41,17 +41,17 @@ export default function Home() {
             Enter a YouTube Podcast URL
           </h2>
           <form onSubmit={handleSubmit}>
-            <div className="relative">
+            <div className="relative"> 
               <Input 
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://www.youtube.com/watch?v=..." 
-                className="w-full pl-12 pr-20 py-3 rounded-full border-2 border-orange-200 focus:border-orange-400 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
+                className="w-full pl-12 pr-16 py-3 rounded-full border-2 border-orange-200 focus:border-orange-400 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
               />
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <Button 
                 type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-red-500 hover:bg-red-600 rounded-full px-4 py-2"
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-red-500 hover:bg-red-600 rounded-full px-4 py-2"
               >
                 Go
               </Button>

@@ -1,65 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import YouTube from 'react-youtube';
+import { useSearchParams } from 'next/navigation';
+import Video from '@/src/components/videopage/video';
+import Captions from '@/src/components/videopage/captions';
 
-export default function Video() {
-  const router = useRouter();
+export default function VideoPage() {
   const searchParams = useSearchParams();
   const url = searchParams.get('url');
-  const [videoId, setVideoId] = useState('');
-  const [isChatOpen, setIsChatOpen] = useState(false);
-
-  useEffect(() => {
-    if (typeof url === 'string') {
-      const id = extractVideoId(url);
-      if (id) {
-        setVideoId(id);
-      } else {
-        console.error('Invalid YouTube URL');
-      }
-    }
-  }, [url]);
-
-  const extractVideoId = (url: string) => {
-    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(.+)/);
-    return match ? match[1] : null;
-  };
-
-  const handleTalkToPodcast = () => {
-    setIsChatOpen(true);
-    // TODO: Implement chat functionality
-  };
+  const videoId = url ? extractVideoId(url) : null;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      {videoId && (
-        <div className="w-full max-w-3xl">
-          <YouTube
-            videoId={videoId}
-            opts={{
-              height: '390',
-              width: '640',
-              playerVars: {
-                autoplay: 1,
-              },
-            }}
-          />
-          <button
-            onClick={handleTalkToPodcast}
-            className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Talk to Podcast
-          </button>
-        </div>
-      )}
-      {isChatOpen && (
-        <div className="mt-4 w-full max-w-3xl">
-          {/* TODO: Implement chat interface */}
-          <p>Chat interface will be implemented here</p>
-        </div>
-      )}
+    <div className="flex flex-row items-center justify-center min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-orange-100">
+      <Video url={url} />
+      {videoId && <Captions videoId={videoId} />}
     </div>
   );
+}
+
+function extractVideoId(url: string) {
+  const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(.+)/);
+  return match ? match[1] : null;
 }

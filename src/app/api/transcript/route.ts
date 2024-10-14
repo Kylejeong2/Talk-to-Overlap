@@ -1,33 +1,32 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { google } from 'googleapis';
+import { NextResponse } from 'next/server'
 
-const youtube = google.youtube({
-  version: 'v3',
-  auth: process.env.YOUTUBE_API_KEY,
-});
+export async function POST(request: Request) {
+    const { videoId } = await request.json();
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { videoId } = req.query;
-
-  if (!videoId || typeof videoId !== 'string') {
-    return res.status(400).json({ error: 'Invalid video ID' });
-  }
-
-  try {
-    const response = await youtube.captions.list({
-      part: ['snippet'],
-      videoId: videoId,
-    });
-
-    if (response.data.items && response.data.items.length > 0) {
-      const captionTrack = response.data.items[0];
-      // TODO: Fetch and process the actual transcript
-      return res.status(200).json({ transcript: 'Transcript placeholder' });
-    } else {
-      return res.status(404).json({ error: 'No captions found for this video' });
+    if (!videoId) {
+        return NextResponse.json({ error: 'Invalid videoId' }, { status: 400 });
     }
-  } catch (error) {
-    console.error('Error fetching transcript:', error);
-    return res.status(500).json({ error: 'Error fetching transcript' });
-  }
+
+    try {
+        const serverBaseUrl = process.env.SERVER_BASE_URL || 'http://localhost:5000';
+
+        const response = await fetch(`${serverBaseUrl}/transcript`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ videoId }),
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        return NextResponse.json(data, { status: 200 });
+    } catch (error) {
+        console.error('Error fetching transcript:', error);
+        return NextResponse.json({ error: 'Error fetching transcript' }, { status: 500 });
+    }
 }
