@@ -10,9 +10,15 @@ export default function VideoPage() {
   const videoId = url ? extractVideoId(url) : null;
 
   return (
-    <div className="flex flex-row items-center justify-center min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-orange-100">
-      <Video url={url} />
-      {videoId && <Captions videoId={videoId} />}
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-orange-100 p-8">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="lg:col-span-1">
+          <Video url={url} />
+        </div>
+        <div className="lg:col-span-1">
+          {videoId && <Captions videoId={videoId} />}
+        </div>
+      </div>
     </div>
   );
 }

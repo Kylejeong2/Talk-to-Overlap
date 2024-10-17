@@ -54,15 +54,15 @@ export default function Captions({ videoId }: CaptionsProps) {
   };
 
   return (
-    <div className="mt-6 w-full max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4 text-gray-800">Video Captions</h2>
-      <div className="bg-white rounded-xl shadow-md p-6 h-96 overflow-y-auto mb-4">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+      <h2 className="text-xl font-semibold p-4 bg-red-500 text-white">Video Captions</h2>
+      <div className="h-[calc(100vh-16rem)] overflow-y-auto p-4">
         {error ? (
           <p className="text-red-600 italic">{error}</p>
         ) : captions ? (
           captions.map((caption, index) => (
-            <div key={index} className="mb-2">
-              <span className="text-gray-500 mr-2">{formatTime(caption.start)}:</span>
+            <div key={index} className="mb-3 pb-2 border-b border-gray-200 last:border-b-0">
+              <span className="text-red-500 font-medium mr-2">{formatTime(caption.start)}:</span>
               <span className="text-gray-700">{caption.text}</span>
             </div>
           ))
