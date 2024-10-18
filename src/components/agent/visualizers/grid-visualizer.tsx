@@ -1,5 +1,5 @@
-import { AgentVisualizerProps } from "@/components/agent/agent-control-bar";
-import { useGridAnimator } from "@/components/agent/animators/use-grid-animator";
+import { AgentVisualizerProps } from "@/src/components/agent/agent-control-bar";
+import { useGridAnimator } from "@/src/components/agent/animators/use-grid-animator";
 
 export const AgentGridVisualizer = ({
   state,

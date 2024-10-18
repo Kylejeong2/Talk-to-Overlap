@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { useConnection } from "@/hooks/use-connection";
+import { Button } from "@/src/components/ui/button";
+import { useConnection } from "@/src/hooks/use-connection";
 import { Loader2, Mic } from "lucide-react";
-import { usePlaygroundState } from "@/hooks/use-playground-state";
-import { AuthDialog } from "./auth";
+import { usePlaygroundState } from "@/src/hooks/use-playground-state";
 
 export function ConnectButton() {
   const { connect, disconnect, shouldConnect } = useConnection();
@@ -68,11 +67,6 @@ export function ConnectButton() {
           </>
         )}
       </Button>
-      <AuthDialog
-        open={showAuthDialog}
-        onOpenChange={setShowAuthDialog}
-        onAuthComplete={handleAuthComplete}
-      />
     </>
   );
 }

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { AgentVisualizerProps } from "@/components/agent/agent-control-bar";
-import { useBarAnimator } from "@/components/agent/animators/use-bar-animator";
+import { AgentVisualizerProps } from "@/src/components/agent/agent-control-bar";
+import { useBarAnimator } from "@/src/components/agent/animators/use-bar-animator";
 
 export const AgentBarVisualizer = ({
   state,

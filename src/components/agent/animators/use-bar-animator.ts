@@ -1,12 +1,12 @@
-import { AgentState } from "@/data/agent";
+import { AgentState } from "@/src/data/agent";
 import { useEffect, useRef, useState } from "react";
 import {
   GridAnimationOptions,
   GridAnimatorState,
-} from "@/components/agent/agent-control-bar";
-import { generateConnectingSequenceBar } from "@/components/agent/animation-sequences/connecting-sequence";
-import { generateListeningSequenceBar } from "@/components/agent/animation-sequences/listening-sequence";
-import { generateThinkingSequenceBar } from "@/components/agent/animation-sequences/thinking-sequence";
+} from "@/src/components/agent/agent-control-bar";
+import { generateConnectingSequenceBar } from "@/src/components/agent/animation-sequences/connecting-sequence";
+import { generateListeningSequenceBar } from "@/src/components/agent/animation-sequences/listening-sequence";
+import { generateThinkingSequenceBar } from "@/src/components/agent/animation-sequences/thinking-sequence";
 
 export const useBarAnimator = (
   type: AgentState,

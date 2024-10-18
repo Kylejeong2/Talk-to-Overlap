@@ -1,8 +1,8 @@
-import { AgentState } from "@/data/agent";
+import { AgentState } from "@/src/data/agent";
 import { ComponentType, CSSProperties } from "react";
 import { AgentBarVisualizer } from "./visualizers/bar-visualizer";
 import { AgentGridVisualizer } from "./visualizers/grid-visualizer";
-import { AgentRadialBarVisualizer } from "@/components/agent/visualizers/radial-visualizer";
+import { AgentRadialBarVisualizer } from "./visualizers/radial-visualizer";
 
 export type GridAnimationOptions = {
   interval?: number;

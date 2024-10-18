@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { AgentVisualizerProps } from "@/components/agent/agent-control-bar";
-import { useRadialBarAnimator } from "@/components/agent/animators/use-radial-animator";
+import { AgentVisualizerProps } from "@/src/components/agent/agent-control-bar";
+import { useRadialBarAnimator } from "@/src/components/agent/animators/use-radial-animator";
 
 export const AgentRadialBarVisualizer = ({
   state,
