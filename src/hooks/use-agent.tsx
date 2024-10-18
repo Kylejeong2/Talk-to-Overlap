@@ -1,35 +1,123 @@
-import { useCallback } from 'react';
-import { usePlaygroundState } from './use-playground-state';
-import { Room } from 'livekit-client';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import {
+  useMaybeRoomContext,
+  useVoiceAssistant,
+} from "@livekit/components-react";
+import {
+  RoomEvent,
+  TranscriptionSegment,
+  Participant,
+  TrackPublication,
+  RemoteParticipant,
+} from "livekit-client";
+import { useConnection } from "@/src/hooks/use-connection";
+
+interface Transcription {
+  segment: TranscriptionSegment;
+  participant?: Participant;
+  publication?: TrackPublication;
+}
+
+interface AgentContextType {
+  displayTranscriptions: Transcription[];
+  agent?: RemoteParticipant;
+}
+
+const AgentContext = createContext<AgentContextType | undefined>(undefined);
+
+export function AgentProvider({ children }: { children: React.ReactNode }) {
+  const room = useMaybeRoomContext();
+  const { shouldConnect } = useConnection();
+  const { agent } = useVoiceAssistant();
+  const [rawSegments, setRawSegments] = useState<{
+    [id: string]: Transcription;
+  }>({});
+  const [displayTranscriptions, setDisplayTranscriptions] = useState<
+    Transcription[]
+  >([]);
+
+  useEffect(() => {
+    if (!room) {
+      return;
+    }
+    const updateRawSegments = (
+      segments: TranscriptionSegment[],
+      participant?: Participant,
+      publication?: TrackPublication,
+    ) => {
+      setRawSegments((prev) => {
+        const newSegments = { ...prev };
+        for (const segment of segments) {
+          newSegments[segment.id] = { segment, participant, publication };
+        }
+        return newSegments;
+      });
+    };
+    room.on(RoomEvent.TranscriptionReceived, updateRawSegments);
+
+    return () => {
+      room.off(RoomEvent.TranscriptionReceived, updateRawSegments);
+    };
+  }, [room]);
+
+  useEffect(() => {
+    const sorted = Object.values(rawSegments).sort(
+      (a, b) =>
+        (a.segment.firstReceivedTime ?? 0) - (b.segment.firstReceivedTime ?? 0),
+    );
+    const mergedSorted = sorted.reduce((acc, current) => {
+      if (acc.length === 0) {
+        return [current];
+      }
+
+      const last = acc[acc.length - 1];
+      if (
+        last.participant === current.participant &&
+        last.participant?.isAgent &&
+        (current.segment.firstReceivedTime ?? 0) -
+          (last.segment.lastReceivedTime ?? 0) <=
+          1000 &&
+        !last.segment.id.startsWith("status-") &&
+        !current.segment.id.startsWith("status-")
+      ) {
+        // Merge segments from the same participant if they're within 1 second of each other
+        return [
+          ...acc.slice(0, -1),
+          {
+            ...current,
+            segment: {
+              ...current.segment,
+              text: `${last.segment.text} ${current.segment.text}`,
+              id: current.segment.id, // Use the id of the latest segment
+              firstReceivedTime: last.segment.firstReceivedTime, // Keep the original start time
+            },
+          },
+        ];
+      } else {
+        return [...acc, current];
+      }
+    }, [] as Transcription[]);
+    setDisplayTranscriptions(mergedSorted);
+  }, [rawSegments]);
+
+  useEffect(() => {
+    if (shouldConnect) {
+      setRawSegments({});
+      setDisplayTranscriptions([]);
+    }
+  }, [shouldConnect]);
+
+  return (
+    <AgentContext.Provider value={{ displayTranscriptions, agent }}>
+      {children}
+    </AgentContext.Provider>
+  );
+}
 
 export function useAgent() {
-  const { state, dispatch } = usePlaygroundState();
-
-  const connect = useCallback(async (videoId: string) => {
-    dispatch({ type: 'SET_CONNECTING', payload: true });
-    try {
-      const response = await fetch(`/api/livekit?room=${videoId}&username=user_${Math.random().toString(36).substr(2, 9)}`);
-      const { token } = await response.json();
-      
-      const room = new Room();
-      await room.connect(process.env.NEXT_PUBLIC_LIVEKIT_URL!, token);
-      
-      dispatch({ type: 'SET_CONNECTED', payload: true });
-    } catch (error) {
-      console.error('Failed to connect:', error);
-    } finally {
-      dispatch({ type: 'SET_CONNECTING', payload: false });
-    }
-  }, [dispatch]);
-
-  const disconnect = useCallback(() => {
-    // Implement disconnect logic
-  }, []);
-
-  const sendMessage = useCallback((message: string) => {
-    // Implement send message logic
-    dispatch({ type: 'ADD_MESSAGE', payload: `You: ${message}` });
-  }, [dispatch]);
-
-  return { connect, disconnect, sendMessage };
+  const context = useContext(AgentContext);
+  if (context === undefined) {
+    throw new Error("useAgent must be used within an AgentProvider");
+  }
+  return context;
 }

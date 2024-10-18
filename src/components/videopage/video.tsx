@@ -7,6 +7,7 @@ import { usePlaygroundState } from '@/src/hooks/use-playground-state';
 import { MicrophoneButton } from '@/src/components/MicrophoneButton';
 import { useAgent } from '@/src/hooks/use-agent';
 
+
 interface VideoProps {
   url: string | null;
 }
@@ -40,8 +41,9 @@ export default function Video({ url }: VideoProps) {
   }, [videoId, state.isConnected, connect, dispatch]);
 
   return (
-    <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg p-8 mb-8">
-      {videoId && (
+    <PlaygroundStateProvider>
+      <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg p-8 mb-8">
+        {videoId && (
         <div className="w-full">
           <YouTube
             videoId={videoId}
@@ -66,5 +68,6 @@ export default function Video({ url }: VideoProps) {
         </div>
       )}
     </div>
+    </PlaygroundStateProvider>
   );
 }

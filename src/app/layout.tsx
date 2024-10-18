@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { PlaygroundStateProvider } from "@/src/hooks/use-playground-state";
+import { ConnectionProvider } from "@/src/hooks/use-connection";
+import { TooltipProvider } from "@/src/components/ui/tooltip";
+import { Toaster } from "@/src/components/ui/toaster";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,7 +32,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <PlaygroundStateProvider>
+          <ConnectionProvider>
+            <TooltipProvider>
+              {children}
+              <Toaster />
+            </TooltipProvider>
+          </ConnectionProvider>
+        </PlaygroundStateProvider>
       </body>
     </html>
   );

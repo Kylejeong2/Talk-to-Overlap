@@ -31,7 +31,7 @@ yarn-error.log*
 # server
 server/venv/
 server/node_modules
-
+server/env
 # vercel
 .vercel
 
