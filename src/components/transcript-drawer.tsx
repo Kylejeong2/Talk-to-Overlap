@@ -1,5 +1,5 @@
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
-import { Transcript } from "@/components/transcript";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/src/components/ui/drawer";
+import { Transcript } from "@/src/components/transcript";
 import { useRef } from "react";
 import { ChevronDown } from "lucide-react";
 

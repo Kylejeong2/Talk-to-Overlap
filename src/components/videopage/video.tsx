@@ -6,7 +6,7 @@ import { Button } from "@/src/components/ui/button"
 import { usePlaygroundState } from '@/src/hooks/use-playground-state';
 import { MicrophoneButton } from '@/src/components/MicrophoneButton';
 import { useAgent } from '@/src/hooks/use-agent';
-
+import { RoomComponent } from '@/src/components/room-component';
 
 interface VideoProps {
   url: string | null;
@@ -14,8 +14,8 @@ interface VideoProps {
 
 export default function Video({ url }: VideoProps) {
   const [videoId, setVideoId] = useState('');
-  const { state, dispatch } = usePlaygroundState();
-  const { connect, disconnect, sendMessage } = useAgent();
+  // const { state, dispatch } = usePlaygroundState();
+  // const { connect } = useConnection();
 
   useEffect(() => {
     if (typeof url === 'string') {
@@ -33,27 +33,27 @@ export default function Video({ url }: VideoProps) {
     return match ? match[1] : null;
   };
 
-  const handleTalkToPodcast = useCallback(async () => {
-    if (!state.isConnected) {
-      await connect(videoId);
-    }
-    dispatch({ type: 'SET_CHAT_OPEN', payload: true });
-  }, [videoId, state.isConnected, connect, dispatch]);
+  // const handleTalkToPodcast = useCallback(async () => {
+  //   if (!state.isConnected) {
+  //     await connect(videoId);
+  //   }
+  //   dispatch({ type: 'SET_CHAT_OPEN', payload: true });
+  // }, [videoId, state.isConnected, connect, dispatch]);
 
   return (
-    <PlaygroundStateProvider>
       <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg p-8 mb-8">
         {videoId && (
         <div className="w-full">
-          <YouTube
+          {/* <YouTube
             videoId={videoId}
             opts={{
               width: '100%',
               height: '390',
             }}
             className="rounded-xl overflow-hidden"
-          />
-          <Button
+          /> */}
+          <RoomComponent />
+          {/* <Button
             onClick={handleTalkToPodcast}
             className="mt-4 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full"
             disabled={state.isConnecting}
@@ -64,10 +64,9 @@ export default function Video({ url }: VideoProps) {
             <div className="mt-4">
               <MicrophoneButton />
             </div>
-          )}
+          )} */}
         </div>
       )}
     </div>
-    </PlaygroundStateProvider>
   );
 }

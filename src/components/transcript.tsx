@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
-import { useAgent } from "@/hooks/use-agent";
+import { cn } from "@/src/lib/utils";
+import { useAgent } from "@/src/hooks/use-agent";
 import { useEffect, useRef, RefObject, useState } from "react";
 
 export function Transcript({
