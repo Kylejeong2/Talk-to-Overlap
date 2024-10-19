@@ -4,24 +4,18 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/src/components/ui/button";
 import { useConnection } from "@/src/hooks/use-connection";
 import { Loader2, Mic } from "lucide-react";
-import { usePlaygroundState } from "@/src/hooks/use-playground-state";
 
 export function ConnectButton() {
   const { connect, disconnect, shouldConnect } = useConnection();
   const [connecting, setConnecting] = useState<boolean>(false);
-  const { pgState } = usePlaygroundState();
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [initiateConnectionFlag, setInitiateConnectionFlag] = useState(false);
 
   const handleConnectionToggle = async () => {
     if (shouldConnect) {
+      console.log("should connect")
       await disconnect();
     } else {
-      if (!pgState.openaiAPIKey) {
-        setShowAuthDialog(true);
-      } else {
-        await initiateConnection();
-      }
+      console.log("initiate")
+      await initiateConnection();
     }
   };
 
@@ -36,19 +30,13 @@ export function ConnectButton() {
     }
   }, [connect]);
 
-  const handleAuthComplete = () => {
-    setShowAuthDialog(false);
-    setInitiateConnectionFlag(true);
-  };
-
   useEffect(() => {
-    if (initiateConnectionFlag && pgState.openaiAPIKey) {
+    if (process.env.OPENAI_API_KEY) {
       initiateConnection();
-      setInitiateConnectionFlag(false);
     }
-  }, [initiateConnectionFlag, initiateConnection, pgState.openaiAPIKey]);
+  }, [initiateConnection, process.env.OPENAI_API_KEY]);
 
-  return (
+  return ( 
     <>
       <Button
         onClick={handleConnectionToggle}

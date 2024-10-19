@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import Video from '@/src/components/videopage/video';
 import Captions from '@/src/components/videopage/captions';
+import { RoomComponent } from '@/src/components/room-component';
 
 export default function VideoPage() {
   const searchParams = useSearchParams();
@@ -18,6 +19,7 @@ export default function VideoPage() {
         <div className="lg:col-span-1">
           {videoId && <Captions videoId={videoId} />}
         </div>
+        <RoomComponent />
       </div>
     </div>
   );

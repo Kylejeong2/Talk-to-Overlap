@@ -17,7 +17,7 @@ import {
   useLocalParticipant,
   useMediaDeviceSelect,
 } from "@livekit/components-react";
-import { useKrispNoiseFilter } from "@livekit/components-react/krisp";
+// import { useKrispNoiseFilter } from "@livekit/components-react/krisp";
 import { Track } from "livekit-client";
     
 import { useConnection } from "@/src/hooks/use-connection";
@@ -34,8 +34,8 @@ export function SessionControls() {
     9,
   );
   const [isMuted, setIsMuted] = useState(localParticipant.isMicrophoneEnabled);
-  const { isNoiseFilterEnabled, isNoiseFilterPending, setNoiseFilterEnabled } =
-    useKrispNoiseFilter();
+//   const { isNoiseFilterEnabled, isNoiseFilterPending, setNoiseFilterEnabled } =
+//     useKrispNoiseFilter();
   useEffect(() => {
     setIsMuted(localParticipant.isMicrophoneEnabled === false);
   }, [localParticipant.isMicrophoneEnabled]);
@@ -102,7 +102,7 @@ export function SessionControls() {
             <DropdownMenuLabel className="text-xs uppercase tracking-widest">
               Audio Settings
             </DropdownMenuLabel>
-            <DropdownMenuCheckboxItem
+            {/* <DropdownMenuCheckboxItem
               className="text-xs"
               checked={isNoiseFilterEnabled}
               onCheckedChange={async (checked) => {
@@ -111,7 +111,7 @@ export function SessionControls() {
               disabled={isNoiseFilterPending}
             >
               Enhanced Noise Filter
-            </DropdownMenuCheckboxItem>
+            </DropdownMenuCheckboxItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

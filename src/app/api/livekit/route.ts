@@ -1,24 +1,55 @@
-import { AccessToken } from 'livekit-server-sdk';
-import { NextResponse } from 'next/server';
+import { AccessToken } from "livekit-server-sdk";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const room = searchParams.get('room');
-  const username = searchParams.get('username');
+export async function POST(request: Request) {
+  const {
+    instructions,
+    openaiAPIKey,
+    sessionConfig: {
+      turnDetection,
+      modalities,
+      voice,
+      temperature,
+      maxOutputTokens,
+      vadThreshold,
+      vadSilenceDurationMs,
+      vadPrefixPaddingMs,
+    },
+  } = await request.json();
 
-  if (!room || !username) {
-    return NextResponse.json({ error: 'Missing room or username' }, { status: 400 });
-  }
-
+  const roomName = Math.random().toString(36).substring(7);
   const apiKey = process.env.LIVEKIT_API_KEY;
   const apiSecret = process.env.LIVEKIT_API_SECRET;
-
   if (!apiKey || !apiSecret) {
-    return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
+    throw new Error("LIVEKIT_API_KEY and LIVEKIT_API_SECRET must be set");
   }
 
-  const at = new AccessToken(apiKey, apiSecret, { identity: username });
-  at.addGrant({ room, roomJoin: true, canPublish: true, canSubscribe: true });
-
-  return NextResponse.json({ token: at.toJwt() });
+  const at = new AccessToken(apiKey, apiSecret, {
+    identity: "human",
+    metadata: JSON.stringify({
+      instructions: instructions,
+      modalities: modalities,
+      voice: voice,
+      temperature: temperature,
+      max_output_tokens: maxOutputTokens,
+      openai_api_key: openaiAPIKey,
+      turn_detection: JSON.stringify({
+        type: turnDetection,
+        threshold: vadThreshold,
+        silence_duration_ms: vadSilenceDurationMs,
+        prefix_padding_ms: vadPrefixPaddingMs,
+      }),
+    }),
+  });
+  at.addGrant({
+    room: roomName,
+    roomJoin: true,
+    canPublish: true,
+    canPublishData: true,
+    canSubscribe: true,
+    canUpdateOwnMetadata: true,
+  });
+  return Response.json({
+    accessToken: await at.toJwt(),
+    url: process.env.NEXT_PUBLIC_LIVEKIT_URL,
+  });
 }

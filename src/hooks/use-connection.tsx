@@ -5,11 +5,14 @@ import React, {
   useState,
   useCallback,
   useContext,
-  useEffect,
 } from "react";
-import { PlaygroundState } from "@/src/data/playground-state";
-import { usePlaygroundState } from "./use-playground-state";
 import { VoiceId } from "@/src/data/voices";
+
+import { TurnDetectionTypeId } from "@/src/data/turn-end-types";
+import { ModalitiesId } from "@/src/data/modalities";
+import { ModelId } from "@/src/data/models";
+import { TranscriptionModelId } from "@/src/data/transcription-models";
+import { ChatbotData } from  "@/src/data/chatbot-data"
 
 export type ConnectFn = () => Promise<void>;
 
@@ -17,7 +20,7 @@ type TokenGeneratorData = {
   shouldConnect: boolean;
   wsUrl: string;
   token: string;
-  pgState: PlaygroundState;
+  data: ChatbotData;
   voice: VoiceId;
   disconnect: () => Promise<void>;
   connect: ConnectFn;
@@ -27,9 +30,24 @@ const ConnectionContext = createContext<TokenGeneratorData | undefined>(
   undefined,
 );
 
-export const ConnectionProvider = ({
-  children,
-}: {
+const data = {
+  instructions: "",
+  openaiAPIKey: process.env.OPENAI_API_KEY,
+  sessionConfig: {
+    model: ModelId.gpt_4o_realtime,
+    transcriptionModel: TranscriptionModelId.whisper1,
+    turnDetection: TurnDetectionTypeId.server_vad,
+    modalities: ModalitiesId.text_and_audio,
+    voice: VoiceId.alloy,
+    temperature: 0.8,
+    maxOutputTokens: null,
+    vadThreshold: 0.5,
+    vadSilenceDurationMs: 200,
+    vadPrefixPaddingMs: 300,
+  },
+} as ChatbotData;
+
+export const ConnectionProvider = ({ children }: {
   children: React.ReactNode;
 }) => {
   const [connectionDetails, setConnectionDetails] = useState<{
@@ -39,18 +57,13 @@ export const ConnectionProvider = ({
     voice: VoiceId;
   }>({ wsUrl: "", token: "", shouldConnect: false, voice: VoiceId.alloy });
 
-  const { pgState, dispatch } = usePlaygroundState();
-
   const connect = async () => {
-    if (!pgState.openaiAPIKey) {
-      throw new Error("OpenAI API key is required to connect");
-    }
-    const response = await fetch("/api/token", {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/livekit`, { // getting room name etc
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(pgState),
+      body: JSON.stringify(data),
     });
 
     if (!response.ok) {
@@ -63,20 +76,13 @@ export const ConnectionProvider = ({
       wsUrl: url,
       token: accessToken,
       shouldConnect: true,
-      voice: pgState.sessionConfig.voice,
+      voice: data.sessionConfig.voice,
     });
   };
 
   const disconnect = useCallback(async () => {
     setConnectionDetails((prev) => ({ ...prev, shouldConnect: false }));
   }, []);
-
-  // Effect to handle API key changes
-  useEffect(() => {
-    if (pgState.openaiAPIKey === null && connectionDetails.shouldConnect) {
-      disconnect();
-    }
-  }, [pgState.openaiAPIKey, connectionDetails.shouldConnect, disconnect]);
 
   return (
     <ConnectionContext.Provider
@@ -85,7 +91,7 @@ export const ConnectionProvider = ({
         token: connectionDetails.token,
         shouldConnect: connectionDetails.shouldConnect,
         voice: connectionDetails.voice,
-        pgState,
+        data,
         connect,
         disconnect,
       }}

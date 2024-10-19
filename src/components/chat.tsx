@@ -21,7 +21,6 @@ export function Chat() {
   const [isChatRunning, setIsChatRunning] = useState(false);
   const { agent } = useAgent();
   const { disconnect } = useConnection();
-  const [isEditingInstructions, setIsEditingInstructions] = useState(false);
 
   const [hasSeenAgent, setHasSeenAgent] = useState(false);
 
@@ -119,10 +118,9 @@ export function Chat() {
               {isChatRunning && renderVisualizer()}
             </div>
           </div>
-        </div>
-
-        <div className="md:mt-2 md:pt-2 md:mb-12 max-md:fixed max-md:bottom-12 max-md:left-1/2 max-md:-translate-x-1/2 max-md:z-50 xl:fixed xl:bottom-12 xl:left-1/2 xl:-translate-x-1/2 xl:z-50">
-          {renderConnectionControl()}
+          <div className="md:mt-2 md:pt-2 md:mb-12 max-md:fixed max-md:bottom-12 max-md:left-1/2 max-md:-translate-x-1/2 max-md:z-50 xl:fixed xl:bottom-12 xl:left-1/2 xl:-translate-x-1/2 xl:z-50">
+            {renderConnectionControl()}
+          </div>
         </div>
       </div>
     </div>
