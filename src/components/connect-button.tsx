@@ -4,10 +4,12 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/src/components/ui/button";
 import { useConnection } from "@/src/hooks/use-connection";
 import { Loader2, Mic } from "lucide-react";
+import { useVideo } from "@/src/hooks/VideoContext";
 
 export function ConnectButton() {
   const { connect, disconnect, shouldConnect } = useConnection();
   const [connecting, setConnecting] = useState<boolean>(false);
+  const { isPaused } = useVideo();
 
   const handleConnectionToggle = async () => {
     if (shouldConnect) {
@@ -29,29 +31,34 @@ export function ConnectButton() {
   }, [connect]);
 
   useEffect(() => {
-    if (process.env.OPENAI_API_KEY) {
+    if (process.env.OPENAI_API_KEY && isPaused) {
       initiateConnection();
     }
-  }, [initiateConnection, process.env.OPENAI_API_KEY]);
+  }, [initiateConnection, process.env.OPENAI_API_KEY, isPaused]);
 
   return ( 
     <>
       <Button
         onClick={handleConnectionToggle}
-        disabled={connecting || shouldConnect}
+        disabled={connecting || shouldConnect || !isPaused}
         className="text-sm font-semibold bg-green-600"
       >
-        {connecting || shouldConnect ? (
+        { !isPaused ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Connecting
+            Pause Video to Talk
           </>
-        ) : (
-          <>
-            <Mic className="mr-2 h-4 w-4" />
-            Connect
-          </>
-        )}
+        ) :
+          connecting || shouldConnect ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Connecting
+            </>
+          ) : (
+            <>
+              <Mic className="mr-2 h-4 w-4" />
+              Connect
+            </>
+          )}
       </Button>
     </>
   );

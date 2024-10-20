@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ConnectionProvider } from "@/src/hooks/use-connection";
-import { TooltipProvider } from "@/src/components/ui/tooltip";
 import { Toaster } from "@/src/components/ui/toaster";
 import { TranscriptProvider } from '@/src/hooks/TranscriptContext';
 
@@ -34,10 +33,8 @@ export default function RootLayout({
       >
         <TranscriptProvider>
           <ConnectionProvider>
-            <TooltipProvider>
               {children}
               <Toaster />
-            </TooltipProvider>
           </ConnectionProvider>
         </TranscriptProvider>
       </body>

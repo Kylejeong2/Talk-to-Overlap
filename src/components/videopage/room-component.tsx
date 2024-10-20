@@ -11,7 +11,6 @@ import { Transcript } from "@/src/components/transcript";
 import { useConnection } from "@/src/hooks/use-connection";
 import { AgentProvider } from "@/src/hooks/use-agent";
 import { useRef } from "react";
-import { ChevronDown } from "lucide-react";
 
 export function RoomComponent() {
   const { shouldConnect, wsUrl, token } = useConnection();
@@ -29,14 +28,14 @@ export function RoomComponent() {
       <AgentProvider>
         <div className="flex flex-col h-full border-l relative">
           <div className="flex-grow overflow-hidden flex flex-col">
-            <div className="flex-grow overflow-y-auto" ref={transcriptContainerRef}>
+            <div className="flex-grow overflow-y-auto rounded-xl h-3/5 p-2" ref={transcriptContainerRef}>
               <Transcript
                 scrollContainerRef={transcriptContainerRef}
                 scrollButtonRef={scrollButtonRef}
               />
             </div>
           </div>
-          <div className="h-2/5 flex-shrink-0">
+          <div className="h-2/5 flex-shrink-0 p-2">
             <RoomAudioRenderer />
             <StartAudio label="Click to allow audio playback" />
             <Chat />

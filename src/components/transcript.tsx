@@ -71,7 +71,8 @@ export function Transcript({
 
   return (
     <>
-      <div className="flex items-center text-xs font-semibold uppercase tracking-widest sticky top-0 left-0 bg-white w-full p-4">
+    <div className="bg-slate-200 h-full rounded-xl overflow-hidden">
+      <div className="flex items-center text-xs font-semibold uppercase tracking-widest sticky top-0 left-0  w-full p-4">
         Transcript
       </div>
       <div className="p-4 min-h-[300px] relative">
@@ -90,7 +91,7 @@ export function Transcript({
                       "flex w-max max-w-[75%] flex-col gap-2 rounded-lg px-3 py-2 text-sm",
                       participant?.isAgent
                         ? "bg-neutral-100 text-[#09090B]"
-                        : "ml-auto border border-neutral-300",
+                        : "ml-auto bg-blue-500 text-white"
                     )}
                   >
                     {segment.text.trim()}
@@ -100,6 +101,7 @@ export function Transcript({
             <div ref={transcriptEndRef} />
           </div>
         )}
+      </div>
       </div>
     </>
   );

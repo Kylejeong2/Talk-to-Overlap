@@ -86,7 +86,7 @@ export function Chat() {
   );
 
   return (
-    <div className="flex items-center justify-center h-full w-full overflow-hidden bg-black">
+    <div className="flex items-center rounded-xl justify-center h-full w-full overflow-hidden bg-gray-600">
       <div className="flex-shrink-0">
         {renderConnectionControl()}
       </div>

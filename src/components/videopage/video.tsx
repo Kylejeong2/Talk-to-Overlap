@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import YouTube from 'react-youtube';
 import Captions from './captions';
 import { useTranscript } from '@/src/hooks/TranscriptContext';
+import { useVideo } from '@/src/hooks/VideoContext';
 
 interface VideoProps {
   url: string | null;
@@ -15,6 +16,7 @@ export default function Video({ url }: VideoProps) {
   const playerRef = useRef<YouTube>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { setSummary } = useTranscript();
+  const { isPaused, setIsPaused } = useVideo();
 
   useEffect(() => {
     if (typeof url === 'string') {
@@ -45,6 +47,10 @@ export default function Video({ url }: VideoProps) {
   const onStateChange = (event: { target: any; data: number }) => {
     if (event.data === YouTube.PlayerState.PLAYING) {
       startTimer();
+      setIsPaused(false);
+    } else if (event.data === YouTube.PlayerState.PAUSED) {
+      stopTimer();
+      setIsPaused(true);
     } else {
       stopTimer();
     }
@@ -77,6 +83,8 @@ export default function Video({ url }: VideoProps) {
   const onReady = (event: { target: any }) => {
     // Update current time when the video is ready
     updateCurrentTime();
+    // Autoplay the video when it's ready
+    event.target.playVideo();
   };
 
   const onSeek = (event: { target: any; data: number }) => {
