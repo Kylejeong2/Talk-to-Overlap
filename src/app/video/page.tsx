@@ -11,15 +11,14 @@ export default function VideoPage() {
   const videoId = url ? extractVideoId(url) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-orange-100 p-8">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="lg:col-span-1">
+    <div className="min-h-screen bg-gradient-to-br max-h-screen from-orange-50 via-red-50 to-orange-100">
+      <div className="max-w-full mx-auto flex">
+        <div className="w-1/2 max-h-screen">
           <Video url={url} />
         </div>
-        <div className="lg:col-span-1">
-          {videoId && <Captions videoId={videoId} />}
+        <div className='w-1/2 max-h-screen bg-white'>
+          <RoomComponent />
         </div>
-        <RoomComponent />
       </div>
     </div>
   );

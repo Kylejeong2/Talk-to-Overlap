@@ -1,11 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import YouTube from 'react-youtube';
-import { Button } from "@/src/components/ui/button"
-import { MicrophoneButton } from '@/src/components/MicrophoneButton';
-import { useAgent } from '@/src/hooks/use-agent';
-import { RoomComponent } from '@/src/components/room-component';
+import Captions from './captions';
 
 interface VideoProps {
   url: string | null;
@@ -13,7 +10,9 @@ interface VideoProps {
 
 export default function Video({ url }: VideoProps) {
   const [videoId, setVideoId] = useState('');
-  // const { connect } = useConnection();
+  const [currentTime, setCurrentTime] = useState(0);
+  const playerRef = useRef<YouTube>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (typeof url === 'string') {
@@ -31,40 +30,73 @@ export default function Video({ url }: VideoProps) {
     return match ? match[1] : null;
   };
 
-  // const handleTalkToPodcast = useCallback(async () => {
-  //   if (!state.isConnected) {
-  //     await connect(videoId);
-  //   }
-  //   dispatch({ type: 'SET_CHAT_OPEN', payload: true });
-  // }, [videoId, state.isConnected, connect, dispatch]);
+  const onStateChange = (event: { target: any; data: number }) => {
+    if (event.data === YouTube.PlayerState.PLAYING) {
+      startTimer();
+    } else {
+      stopTimer();
+    }
+  };
+
+  const startTimer = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      updateCurrentTime();
+    }, 100);
+  };
+
+  const stopTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const updateCurrentTime = () => {
+    if (playerRef.current) {
+      const player = playerRef.current.getInternalPlayer();
+      if (player && typeof player.getCurrentTime === 'function') {
+        setCurrentTime(player.getCurrentTime());
+      }
+    }
+  };
+
+  const onReady = (event: { target: any }) => {
+    // Update current time when the video is ready
+    updateCurrentTime();
+  };
+
+  const onSeek = (event: { target: any; data: number }) => {
+    // Update current time when the user seeks
+    updateCurrentTime();
+  };
 
   return (
-      <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg p-8 mb-8">
+    <div className="h-screen flex flex-col">
+      <div className="flex-1 p-4">
         {videoId && (
-        <div className="w-full">
           <YouTube
             videoId={videoId}
             opts={{
               width: '100%',
-              height: '390',
+              height: '100%',
+              playerVars: {
+                autoplay: 1,
+                modestbranding: 1,
+                rel: 0,
+              },
             }}
-            className="rounded-xl overflow-hidden"
+            onStateChange={onStateChange}
+            onReady={onReady}
+            onSeek={onSeek}
+            ref={playerRef}
+            className="rounded-xl overflow-hidden h-full"
           />
-          {/* <RoomComponent /> */}
-          {/* <Button
-            onClick={handleTalkToPodcast}
-            className="mt-4 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full"
-            disabled={state.isConnecting}
-          >
-            {state.isConnecting ? 'Connecting...' : 'Talk to Podcast'}
-          </Button>
-          {state.isChatOpen && (
-            <div className="mt-4">
-              <MicrophoneButton />
-            </div>
-          )} */}
-        </div>
-      )}
+        )}
+      </div>
+      <div className="flex-1 overflow-hidden">
+        {videoId && <Captions videoId={videoId} currentTime={currentTime} />}
+      </div>
     </div>
   );
 }

@@ -17,25 +17,16 @@ import {
   useLocalParticipant,
   useMediaDeviceSelect,
 } from "@livekit/components-react";
-// import { useKrispNoiseFilter } from "@livekit/components-react/krisp";
 import { Track } from "livekit-client";
     
 import { useConnection } from "@/src/hooks/use-connection";
-import { useMultibandTrackVolume } from "@/src/hooks/use-multiband-track-volume";
-import { MultibandAudioVisualizer } from "@/src/components/agent/visualizers/multiband-bar-visualizer";
 
 export function SessionControls() {
   const localParticipant = useLocalParticipant();
   const deviceSelect = useMediaDeviceSelect({ kind: "audioinput" });
   const { disconnect } = useConnection();
-
-  const localMultibandVolume = useMultibandTrackVolume(
-    localParticipant.microphoneTrack?.track,
-    9,
-  );
   const [isMuted, setIsMuted] = useState(localParticipant.isMicrophoneEnabled);
-//   const { isNoiseFilterEnabled, isNoiseFilterPending, setNoiseFilterEnabled } =
-//     useKrispNoiseFilter();
+
   useEffect(() => {
     setIsMuted(localParticipant.isMicrophoneEnabled === false);
   }, [localParticipant.isMicrophoneEnabled]);
@@ -57,15 +48,7 @@ export function SessionControls() {
               <Mic className="h-4 w-4" />
             )}
           </TrackToggle>
-          <MultibandAudioVisualizer
-            state="speaking"
-            barWidth={2}
-            minBarHeight={2}
-            maxBarHeight={16}
-            frequencies={localMultibandVolume}
-            borderRadius={5}
-            gap={2}
-          />
+
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -102,16 +85,6 @@ export function SessionControls() {
             <DropdownMenuLabel className="text-xs uppercase tracking-widest">
               Audio Settings
             </DropdownMenuLabel>
-            {/* <DropdownMenuCheckboxItem
-              className="text-xs"
-              checked={isNoiseFilterEnabled}
-              onCheckedChange={async (checked) => {
-                setNoiseFilterEnabled(checked);
-              }}
-              disabled={isNoiseFilterPending}
-            >
-              Enhanced Noise Filter
-            </DropdownMenuCheckboxItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

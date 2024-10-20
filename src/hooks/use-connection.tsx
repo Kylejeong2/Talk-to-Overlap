@@ -30,23 +30,6 @@ const ConnectionContext = createContext<TokenGeneratorData | undefined>(
   undefined,
 );
 
-const data = {
-  instructions: "",
-  openaiAPIKey: process.env.OPENAI_API_KEY,
-  sessionConfig: {
-    model: ModelId.gpt_4o_realtime,
-    transcriptionModel: TranscriptionModelId.whisper1,
-    turnDetection: TurnDetectionTypeId.server_vad,
-    modalities: ModalitiesId.text_and_audio,
-    voice: VoiceId.alloy,
-    temperature: 0.8,
-    maxOutputTokens: null,
-    vadThreshold: 0.5,
-    vadSilenceDurationMs: 200,
-    vadPrefixPaddingMs: 300,
-  },
-} as ChatbotData;
-
 export const ConnectionProvider = ({ children }: {
   children: React.ReactNode;
 }) => {
@@ -56,6 +39,41 @@ export const ConnectionProvider = ({ children }: {
     shouldConnect: boolean;
     voice: VoiceId;
   }>({ wsUrl: "", token: "", shouldConnect: false, voice: VoiceId.alloy });
+
+  // const getTranscription = async () => {
+  //   try {
+  //       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/transcript`, {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //         body: JSON.stringify({ videoId: videoId })
+  //       });
+        
+  //       if (!res.ok) {
+  //         throw new Error('Failed to fetch captions');
+  //       }
+  //     }catch(e) {
+  //       console.error("Error Getting Transcription")
+  //     }
+  // }
+
+  const data = {
+    instructions: "You are a podcaster who is an expert on whatever you're talking about. ",
+    openaiAPIKey: process.env.OPENAI_API_KEY,
+    sessionConfig: {
+      model: ModelId.gpt_4o_realtime,
+      transcriptionModel: TranscriptionModelId.whisper1,
+      turnDetection: TurnDetectionTypeId.server_vad,
+      modalities: ModalitiesId.text_and_audio,
+      voice: VoiceId.alloy,
+      temperature: 0.8,
+      maxOutputTokens: 1000,
+      vadThreshold: 0.5,
+      vadSilenceDurationMs: 200,
+      vadPrefixPaddingMs: 300,
+    },
+  } as ChatbotData;
 
   const connect = async () => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/livekit`, { // getting room name etc

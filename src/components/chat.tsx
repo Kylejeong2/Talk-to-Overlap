@@ -5,19 +5,13 @@ import { SessionControls } from "@/src/components/session-controls";
 import { ConnectButton } from "./connect-button";
 import { ConnectionState } from "livekit-client";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  useConnectionState,
-  useVoiceAssistant,
-  BarVisualizer,
-} from "@livekit/components-react";
-// import { ChatControls } from "@/src/components/chat-controls";
+import { useConnectionState } from "@livekit/components-react";
 import { useAgent } from "@/src/hooks/use-agent";
 import { useConnection } from "@/src/hooks/use-connection";
 import { toast } from "@/src/hooks/use-toast";
 
 export function Chat() {
   const connectionState = useConnectionState();
-  const { audioTrack, state } = useVoiceAssistant();
   const [isChatRunning, setIsChatRunning] = useState(false);
   const { agent } = useAgent();
   const { disconnect } = useConnection();
@@ -34,9 +28,9 @@ export function Chat() {
         setHasSeenAgent(false);
 
         toast({
-          title: "Agent Unavailable",
+          title: "Chat Unavailable",
           description:
-            "Unable to connect to an agent right now. Please try again later.",
+            "Unable to connect right now. Please try again later.",
           variant: "destructive",
         });
       }, 5000);
@@ -77,19 +71,6 @@ export function Chat() {
     };
   }, [connectionState, agent, disconnect, hasSeenAgent]);
 
-  const renderVisualizer = () => (
-    <div className="flex w-full items-center">
-      <div className="h-[320px] mt-16 md:mt-0 lg:pb-24 w-full">
-        <BarVisualizer
-          state={state}
-          barCount={5}
-          trackRef={audioTrack}
-          className="w-full h-full"
-        />
-      </div>
-    </div>
-  );
-
   const renderConnectionControl = () => (
     <AnimatePresence mode="wait">
       <motion.div
@@ -108,17 +89,7 @@ export function Chat() {
     <div className="flex flex-col h-full overflow-hidden p-2 lg:p-4">
       <div className="flex flex-col flex-grow items-center lg:justify-between mt-12 lg:mt-0">
         <div className="w-full h-full flex flex-col">
-          <div className="flex items-center justify-center w-full">
-            <div className="lg:hidden w-full">
-              {isChatRunning && renderVisualizer()}
-            </div>
-          </div>
-          <div className="grow h-full flex items-center justify-center">
-            <div className="w-full hidden lg:block">
-              {isChatRunning && renderVisualizer()}
-            </div>
-          </div>
-          <div className="md:mt-2 md:pt-2 md:mb-12 max-md:fixed max-md:bottom-12 max-md:left-1/2 max-md:-translate-x-1/2 max-md:z-50 xl:fixed xl:bottom-12 xl:left-1/2 xl:-translate-x-1/2 xl:z-50">
+          <div className="">
             {renderConnectionControl()}
           </div>
         </div>

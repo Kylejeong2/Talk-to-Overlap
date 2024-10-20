@@ -11,10 +11,8 @@ export function ConnectButton() {
 
   const handleConnectionToggle = async () => {
     if (shouldConnect) {
-      console.log("should connect")
       await disconnect();
     } else {
-      console.log("initiate")
       await initiateConnection();
     }
   };
@@ -41,7 +39,7 @@ export function ConnectButton() {
       <Button
         onClick={handleConnectionToggle}
         disabled={connecting || shouldConnect}
-        className="text-sm font-semibold bg-oai-green"
+        className="text-sm font-semibold bg-green-600"
       >
         {connecting || shouldConnect ? (
           <>
