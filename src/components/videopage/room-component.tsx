@@ -1,0 +1,48 @@
+"use client";
+
+import {
+  LiveKitRoom,
+  RoomAudioRenderer,
+  StartAudio,
+} from "@livekit/components-react";
+
+import { Chat } from "@/src/components/chat";
+import { Transcript } from "@/src/components/transcript";
+import { useConnection } from "@/src/hooks/use-connection";
+import { AgentProvider } from "@/src/hooks/use-agent";
+import { useRef } from "react";
+import { ChevronDown } from "lucide-react";
+
+export function RoomComponent() {
+  const { shouldConnect, wsUrl, token } = useConnection();
+  const transcriptContainerRef = useRef<HTMLDivElement>(null);
+  const scrollButtonRef = useRef<HTMLButtonElement>(null);
+  return (
+    <LiveKitRoom
+      serverUrl={wsUrl}
+      token={token} 
+      connect={shouldConnect}
+      audio={true}
+      className="flex h-screen flex-col flex-grow overflow-hidden border-l border-r border-b rounded-b-md mb-2 bg-white rounded-xl"
+      style={{ "--lk-bg": "white" } as React.CSSProperties}
+    >
+      <AgentProvider>
+        <div className="flex flex-col h-full border-l relative">
+          <div className="flex-grow overflow-hidden flex flex-col">
+            <div className="flex-grow overflow-y-auto" ref={transcriptContainerRef}>
+              <Transcript
+                scrollContainerRef={transcriptContainerRef}
+                scrollButtonRef={scrollButtonRef}
+              />
+            </div>
+          </div>
+          <div className="h-2/5 flex-shrink-0">
+            <RoomAudioRenderer />
+            <StartAudio label="Click to allow audio playback" />
+            <Chat />
+          </div>
+        </div>
+      </AgentProvider>
+    </LiveKitRoom>
+  );
+}

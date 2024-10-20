@@ -4,6 +4,7 @@ import "./globals.css";
 import { ConnectionProvider } from "@/src/hooks/use-connection";
 import { TooltipProvider } from "@/src/components/ui/tooltip";
 import { Toaster } from "@/src/components/ui/toaster";
+import { TranscriptProvider } from '@/src/hooks/TranscriptContext';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -31,12 +32,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <TranscriptProvider>
           <ConnectionProvider>
             <TooltipProvider>
               {children}
               <Toaster />
             </TooltipProvider>
           </ConnectionProvider>
+        </TranscriptProvider>
       </body>
     </html>
   );

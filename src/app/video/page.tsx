@@ -2,8 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import Video from '@/src/components/videopage/video';
-import Captions from '@/src/components/videopage/captions';
-import { RoomComponent } from '@/src/components/room-component';
+import { RoomComponent } from '@/src/components/videopage/room-component';
 
 export default function VideoPage() {
   const searchParams = useSearchParams();
@@ -13,10 +12,10 @@ export default function VideoPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br max-h-screen from-orange-50 via-red-50 to-orange-100">
       <div className="max-w-full mx-auto flex">
-        <div className="w-1/2 max-h-screen">
+        <div className="w-1/2 max-h-screen p-2">
           <Video url={url} />
         </div>
-        <div className='w-1/2 max-h-screen bg-white'>
+        <div className='w-1/2 max-h-screen p-2'>
           <RoomComponent />
         </div>
       </div>

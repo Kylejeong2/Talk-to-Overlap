@@ -69,8 +69,8 @@ export default function Captions({ videoId, currentTime }: CaptionsProps) {
   };
 
   return (
-    <div className="bg-white h-full flex flex-col border-l rounded-xl rounded-tl-xl rounded-tr-xl rounded-bl-xl rounded-br-xl">
-      <h2 className="text-xl font-semibold p-2 bg-red-500 text-white">Video Captions</h2>
+    <div className="bg-white h-full flex flex-col border-l p-2">
+      <h2 className="text-xl font-semibold p-2 bg-red-500 text-white rounded-t-xl">Video Captions</h2>
       <div className="flex-grow overflow-y-auto p-4" ref={captionsRef}>
         {error ? (
           <p className="text-red-600 italic">{error}</p>

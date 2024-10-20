@@ -28,9 +28,9 @@ export async function POST(request: Request) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data: TranscriptSegment[] = await response.json();
+        const data = await response.json();
 
-        const fullTranscript = data.map(segment => segment.text).join(' ');
+        const fullTranscript = data.transcript.map((segment: TranscriptSegment) => segment.text).join(' ');
 
         return NextResponse.json({transcript: fullTranscript}, { status: 200 });
         

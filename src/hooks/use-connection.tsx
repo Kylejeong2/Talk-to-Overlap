@@ -13,6 +13,7 @@ import { ModalitiesId } from "@/src/data/modalities";
 import { ModelId } from "@/src/data/models";
 import { TranscriptionModelId } from "@/src/data/transcription-models";
 import { ChatbotData } from  "@/src/data/chatbot-data"
+import { useTranscript } from '@/src/hooks/TranscriptContext';
 
 export type ConnectFn = () => Promise<void>;
 
@@ -33,6 +34,7 @@ const ConnectionContext = createContext<TokenGeneratorData | undefined>(
 export const ConnectionProvider = ({ children }: {
   children: React.ReactNode;
 }) => {
+  const { summary } = useTranscript();
   const [connectionDetails, setConnectionDetails] = useState<{
     wsUrl: string;
     token: string;
@@ -59,7 +61,7 @@ export const ConnectionProvider = ({ children }: {
   // }
 
   const data = {
-    instructions: "You are a podcaster who is an expert on whatever you're talking about. ",
+    instructions: `You are a podcaster who is an expert on whatever you're talking about. Here's a summary of the podcast transcript: ${summary}`,
     openaiAPIKey: process.env.OPENAI_API_KEY,
     sessionConfig: {
       model: ModelId.gpt_4o_realtime,

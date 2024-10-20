@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import YouTube from 'react-youtube';
 import Captions from './captions';
+import { useTranscript } from '@/src/hooks/TranscriptContext';
 
 interface VideoProps {
   url: string | null;
@@ -13,6 +14,7 @@ export default function Video({ url }: VideoProps) {
   const [currentTime, setCurrentTime] = useState(0);
   const playerRef = useRef<YouTube>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const { setSummary } = useTranscript();
 
   useEffect(() => {
     if (typeof url === 'string') {
@@ -24,6 +26,16 @@ export default function Video({ url }: VideoProps) {
       }
     }
   }, [url]);
+
+  useEffect(() => {
+    if (videoId) {
+      const fetchData = async () => {
+        const transcript = await fetchTextTranscript(videoId);
+        fetchSummary(transcript);
+      };
+      fetchData();
+    }
+  }, [videoId]);
 
   const extractVideoId = (url: string) => {
     const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(.+)/);
@@ -38,6 +50,7 @@ export default function Video({ url }: VideoProps) {
     }
   };
 
+  // currently not working yet
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -71,8 +84,50 @@ export default function Video({ url }: VideoProps) {
     updateCurrentTime();
   };
 
+  const fetchTextTranscript = async (videoId: string) => {
+    try {
+      const res = await fetch("/api/text-only-transcript", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ videoId }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch summary');
+      }
+
+      const data = await res.json();
+      return data.transcript;
+    } catch (error) {
+      console.error('Error fetching summary:', error);
+    }
+  }
+
+  const fetchSummary = async (transcript: string) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/summarize`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ transcript }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch summary');
+      }
+
+      const data = await response.json();
+      setSummary(data.summary);
+    } catch (error) {
+      console.error('Error fetching summary:', error);
+    }
+  };
+
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col bg-white rounded-xl">
       <div className="flex-1 p-4">
         {videoId && (
           <YouTube

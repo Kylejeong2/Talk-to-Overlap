@@ -86,13 +86,9 @@ export function Chat() {
   );
 
   return (
-    <div className="flex flex-col h-full overflow-hidden p-2 lg:p-4">
-      <div className="flex flex-col flex-grow items-center lg:justify-between mt-12 lg:mt-0">
-        <div className="w-full h-full flex flex-col">
-          <div className="">
-            {renderConnectionControl()}
-          </div>
-        </div>
+    <div className="flex items-center justify-center h-full w-full overflow-hidden bg-black">
+      <div className="flex-shrink-0">
+        {renderConnectionControl()}
       </div>
     </div>
   );

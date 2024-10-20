@@ -72,7 +72,7 @@ export function Transcript({
   return (
     <>
       <div className="flex items-center text-xs font-semibold uppercase tracking-widest sticky top-0 left-0 bg-white w-full p-4">
-        Talk to Overlap Transcript
+        Transcript
       </div>
       <div className="p-4 min-h-[300px] relative">
         {displayTranscriptions.length === 0 ? (
