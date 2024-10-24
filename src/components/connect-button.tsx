@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Button } from "@/src/components/ui/button";
-import { useConnection } from "@/src/hooks/use-connection";
+import { Button } from "@/components/ui/button";
+import { useConnection } from "@/hooks/use-connection";
 import { Loader2, Mic } from "lucide-react";
-import { useVideo } from "@/src/hooks/VideoContext";
+import { useVideo } from "@/hooks/VideoContext";
 
 export function ConnectButton() {
   const { connect, disconnect, shouldConnect } = useConnection();

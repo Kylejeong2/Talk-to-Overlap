@@ -10,7 +10,7 @@ import {
   TrackPublication,
   RemoteParticipant,
 } from "livekit-client";
-import { useConnection } from "@/src/hooks/use-connection";
+import { useConnection } from "@/hooks/use-connection";
 
 interface Transcription {
   segment: TranscriptionSegment;

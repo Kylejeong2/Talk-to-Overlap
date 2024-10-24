@@ -1,6 +1,6 @@
-import { TurnDetectionTypeId } from "@/src/data/turn-end-types";
-import { ModalitiesId } from "@/src/data/modalities";
-import { VoiceId } from "@/src/data/voices";
+import { TurnDetectionTypeId } from "@/data/turn-end-types";
+import { ModalitiesId } from "@/data/modalities";
+import { VoiceId } from "@/data/voices";
 import { ModelId } from "./models";
 import { TranscriptionModelId } from "./transcription-models";
 

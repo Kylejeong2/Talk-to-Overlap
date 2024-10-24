@@ -6,10 +6,10 @@ import {
   StartAudio,
 } from "@livekit/components-react";
 
-import { Chat } from "@/src/components/chat";
-import { Transcript } from "@/src/components/transcript";
-import { useConnection } from "@/src/hooks/use-connection";
-import { AgentProvider } from "@/src/hooks/use-agent";
+import { Chat } from "@/components/chat";
+import { Transcript } from "@/components/transcript";
+import { useConnection } from "@/hooks/use-connection";
+import { AgentProvider } from "@/hooks/use-agent";
 import { useRef } from "react";
 
 export function RoomComponent() {

@@ -6,14 +6,14 @@ import React, {
   useCallback,
   useContext,
 } from "react";
-import { VoiceId } from "@/src/data/voices";
+import { VoiceId } from "@/data/voices";
 
-import { TurnDetectionTypeId } from "@/src/data/turn-end-types";
-import { ModalitiesId } from "@/src/data/modalities";
-import { ModelId } from "@/src/data/models";
-import { TranscriptionModelId } from "@/src/data/transcription-models";
-import { ChatbotData } from  "@/src/data/chatbot-data"
-import { useTranscript } from '@/src/hooks/TranscriptContext';
+import { TurnDetectionTypeId } from "@/data/turn-end-types";
+import { ModalitiesId } from "@/data/modalities";
+import { ModelId } from "@/data/models";
+import { TranscriptionModelId } from "@/data/transcription-models";
+import { ChatbotData } from  "@/data/chatbot-data"
+import { useTranscript } from '@/hooks/TranscriptContext';
 
 export type ConnectFn = () => Promise<void>;
 

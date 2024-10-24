@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import YouTube from 'react-youtube';
 import Captions from './captions';
-import { useTranscript } from '@/src/hooks/TranscriptContext';
-import { useVideo } from '@/src/hooks/VideoContext';
+import { useTranscript } from '@/hooks/TranscriptContext';
+import { useVideo } from '@/hooks/VideoContext';
 
 interface VideoProps {
   url: string | null;

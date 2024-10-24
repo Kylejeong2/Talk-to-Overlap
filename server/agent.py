@@ -5,14 +5,13 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 import uuid
 from dataclasses import asdict, dataclass
 from typing import Any, Dict
-import os 
-from dotenv import load_dotenv 
 
-load_dotenv()
-
+import pinecone
+from dotenv import load_dotenv
 from livekit import rtc
 from livekit.agents import (
     AutoSubscribe,
@@ -22,11 +21,19 @@ from livekit.agents import (
     cli,
     llm,
 )
-from livekit.agents.multimodal import MultimodalAgent
 from livekit.plugins import openai
+
+from multimodal_agent import CustomMultimodalAgent  # Import the custom agent
+
+load_dotenv()
 
 logger = logging.getLogger("my-worker")
 logger.setLevel(logging.INFO)
+
+
+# Initialize Pinecone
+pinecone.init(api_key=os.getenv("PINECONE_API_KEY"), environment=os.getenv("PINECONE_ENVIRONMENT"))
+index = pinecone.Index(os.getenv("PINECONE_INDEX"))
 
 
 @dataclass
@@ -107,7 +114,8 @@ def run_multimodal_agent(ctx: JobContext, participant: rtc.Participant):
         modalities=config.modalities,
         turn_detection=config.turn_detection,
     )
-    assistant = MultimodalAgent(model=model)
+    # Use the CustomMultimodalAgent instead of the default one
+    assistant = CustomMultimodalAgent(model=model)
     assistant.start(ctx.room)
     session = model.sessions[0]
 

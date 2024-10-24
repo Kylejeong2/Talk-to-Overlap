@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { SessionControls } from "@/src/components/session-controls";
+import { SessionControls } from "@/components/session-controls";
 import { ConnectButton } from "./connect-button";
 import { ConnectionState } from "livekit-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useConnectionState } from "@livekit/components-react";
-import { useAgent } from "@/src/hooks/use-agent";
-import { useConnection } from "@/src/hooks/use-connection";
-import { toast } from "@/src/hooks/use-toast";
+import { useAgent } from "@/hooks/use-agent";
+import { useConnection } from "@/hooks/use-connection";
+import { toast } from "@/hooks/use-toast";
 
 export function Chat() {
   const connectionState = useConnectionState();
