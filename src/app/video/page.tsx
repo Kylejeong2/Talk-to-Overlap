@@ -53,11 +53,15 @@ const VideoPage = () => {
         <VideoProvider>
             <div className="min-h-screen bg-gradient-to-br max-h-screen from-orange-50 via-red-50 to-orange-100">
                 {loading ? (
-                    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-                        <div>
-                          Coming Soon
+                    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+                        <div className="text-white text-2xl mb-4 text-center">
+                            <p>Processing your video</p>
+                            <p className="mt-2">This will take about 2-3 minutes</p>
                         </div>
-                        <div className="w-16 h-16 border-4 border-gray-200 border-t-orange-500 rounded-full animate-spin"></div>
+                        <div className="w-24 h-24 border-8 border-gray-300 border-t-orange-500 rounded-full animate-spin"></div>
+                        <div className="text-white text-lg mt-8">
+                            Please wait...
+                        </div>
                     </div>
                 ) : (
                     <div className="max-w-full mx-auto flex">
