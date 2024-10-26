@@ -9,46 +9,16 @@ interface CaptionItem {
 interface CaptionsProps {
   videoId: string;
   currentTime: number;
+  transcript: any;
 }
 
-export default function Captions({ videoId, currentTime }: CaptionsProps) {
+export default function Captions({ currentTime, transcript }: CaptionsProps) {
   const [captions, setCaptions] = useState<CaptionItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const captionsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fetchCaptions = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/transcript`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ videoId: videoId })
-        });
-        
-        if (!res.ok) {
-          throw new Error('Failed to fetch captions');
-        }
-
-        const data = await res.json();
-        if (data && typeof data === 'object' && Array.isArray(data.transcript)) {
-          setCaptions(data.transcript);
-        } else if (Array.isArray(data)) {
-          setCaptions(data);
-        } else {
-          throw new Error('Unexpected data format');
-        }
-      } catch (error) {
-        console.error('Error fetching captions:', error);
-        setError('Failed to load captions');
-      }
-    };
-
-    fetchCaptions();
-  }, [videoId]);
-
-  useEffect(() => {
+    setCaptions(transcript)
     if (captions && captionsRef.current) {
       const currentCaption = captions.find(
         (caption) => currentTime >= caption.start && currentTime < caption.start + caption.duration

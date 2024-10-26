@@ -3,19 +3,18 @@
 import { useState, useEffect, useRef } from 'react';
 import YouTube from 'react-youtube';
 import Captions from './captions';
-import { useTranscript } from '@/hooks/TranscriptContext';
 import { useVideo } from '@/hooks/VideoContext';
 
 interface VideoProps {
   url: string | null;
+  transcript: string[] | null;
 }
 
-export default function Video({ url }: VideoProps) {
+export default function Video({ url, transcript }: VideoProps) {
   const [videoId, setVideoId] = useState('');
   const [currentTime, setCurrentTime] = useState(0);
   const playerRef = useRef<YouTube>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const { setSummary } = useTranscript();
   const { isPaused, setIsPaused } = useVideo();
 
   useEffect(() => {
@@ -29,21 +28,12 @@ export default function Video({ url }: VideoProps) {
     }
   }, [url]);
 
-  useEffect(() => {
-    if (videoId) {
-      const fetchData = async () => {
-        const transcript = await fetchTextTranscript(videoId);
-        fetchSummary(transcript);
-      };
-      fetchData();
-    }
-  }, [videoId]);
-
   const extractVideoId = (url: string) => {
     const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(.+)/);
     return match ? match[1] : null;
   };
 
+  // TODO: currently not working yet
   const onStateChange = (event: { target: any; data: number }) => {
     if (event.data === YouTube.PlayerState.PLAYING) {
       startTimer();
@@ -55,8 +45,7 @@ export default function Video({ url }: VideoProps) {
       stopTimer();
     }
   };
-
-  // currently not working yet
+1
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -92,48 +81,6 @@ export default function Video({ url }: VideoProps) {
     updateCurrentTime();
   };
 
-  const fetchTextTranscript = async (videoId: string) => {
-    try {
-      const res = await fetch("/api/text-only-transcript", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ videoId }),
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to fetch summary');
-      }
-
-      const data = await res.json();
-      return data.transcript;
-    } catch (error) {
-      console.error('Error fetching summary:', error);
-    }
-  }
-
-  const fetchSummary = async (transcript: string) => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/summarize`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ transcript }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch summary');
-      }
-
-      const data = await response.json();
-      setSummary(data.summary);
-    } catch (error) {
-      console.error('Error fetching summary:', error);
-    }
-  };
-
   return (
     <div className="h-screen flex flex-col bg-white rounded-xl">
       <div className="flex-1 p-4">
@@ -158,7 +105,7 @@ export default function Video({ url }: VideoProps) {
         )}
       </div>
       <div className="flex-1 overflow-hidden">
-        {videoId && <Captions videoId={videoId} currentTime={currentTime} />}
+        {videoId && <Captions videoId={videoId} currentTime={currentTime} transcript={transcript}/>}
       </div>
     </div>
   );

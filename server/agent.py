@@ -10,7 +10,6 @@ import uuid
 from dataclasses import asdict, dataclass
 from typing import Any, Dict
 
-import pinecone
 from dotenv import load_dotenv
 from livekit import rtc
 from livekit.agents import (
@@ -29,12 +28,6 @@ load_dotenv()
 
 logger = logging.getLogger("my-worker")
 logger.setLevel(logging.INFO)
-
-
-# Initialize Pinecone
-pinecone.init(api_key=os.getenv("PINECONE_API_KEY"), environment=os.getenv("PINECONE_ENVIRONMENT"))
-index = pinecone.Index(os.getenv("PINECONE_INDEX"))
-
 
 @dataclass
 class SessionConfig:

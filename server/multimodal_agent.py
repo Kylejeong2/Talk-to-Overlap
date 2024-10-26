@@ -3,19 +3,19 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from dataclasses import dataclass
 from typing import Callable, Literal, Protocol
 
 import openai
-import pinecone
 from livekit import rtc
 from livekit.agents import llm, stt, tokenize, transcription, utils, vad
+from livekit.agents._constants import ATTRIBUTE_AGENT_STATE
+from livekit.agents._types import AgentState
+from livekit.agents.log import logger
+from livekit.agents.multimodal import agent_playout
 from livekit.plugins.openai import realtime
-
-from .._constants import ATTRIBUTE_AGENT_STATE
-from .._types import AgentState
-from ..log import logger
-from . import agent_playout
+from pinecone import Pinecone
 
 EventTypes = Literal[
     "user_started_speaking",
@@ -307,34 +307,105 @@ class CustomMultimodalAgent(MultimodalAgent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Initialize Pinecone
-        self._index = pinecone.Index("overlap")
+        pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
+        openai.api_key = os.getenv("OPENAI_API_KEY_EMBEDDINGS")
+        self._index = pc.Index("overlap")
 
-    def retrieve_context_from_pinecone(self, text: str) -> str:
-        # Generate embedding for the text
-        response = openai.Embedding.create(input=text, model="text-large-3")
-        embedding = response['data'][0]['embedding']
-        
-        # Search Pinecone for similar embeddings
-        results = self._index.query(embedding, top_k=5, include_metadata=True)
-        
-        # Construct context from results
-        context = "\n".join([f"Timestamp: {match['metadata']['timestamp']}, Score: {match['score']}" for match in results['matches']])
-        return context
+    async def retrieve_context_from_pinecone(self, text_stream) -> str:
+        try:
+            # Collect the full text from the stream
+            text = ""
+            if hasattr(text_stream, '__aiter__'):
+                logger.info("Processing async text stream...")
+                async for chunk in text_stream:
+                    text += chunk
+            else:
+                logger.info("Processing regular string input...")
+                text = str(text_stream)
+                
+            logger.info(f"Input text for embedding: {text[:100]}...")  # Log first 100 chars
+            
+            # Get embeddings
+            logger.info("Requesting embeddings from OpenAI...")
+            response = openai.embeddings.create(
+                model="text-embedding-3-large",
+                input=text,
+            )
+            embedding = response.data[0].embedding
+            logger.info(f"Received embedding vector of length: {len(embedding)}")
+            
+            # Query Pinecone
+            logger.info("Querying Pinecone index 'overlap' for similar contexts...")
+            results = self._index.query(
+                vector=embedding,
+                top_k=5,
+                include_metadata=True
+            )
+            
+            logger.info(f"Received {len(results['matches'])} matches from Pinecone")
+            
+            # Build context
+            context_items = []
+            for i, match in enumerate(results['matches'], 1):
+                try:
+                    timestamp = match['metadata'].get('timestamp', 'N/A')
+                    score = match.get('score', 'N/A')
+                    logger.info(f"Match {i}: Score={score:.4f}, Timestamp={timestamp}")
+                    context_items.append(f"Timestamp: {timestamp}, Score: {score}")
+                except Exception as e:
+                    logger.error(f"Error processing match {i}: {e}")
+                    continue
+                    
+            context = "\n".join(context_items)
+            logger.info(f"Generated context ({len(context)} chars): {context[:200]}...")  # Log first 200 chars
+            return context
+            
+        except Exception as e:
+            logger.error(f"Error in retrieve_context_from_pinecone: {str(e)}")
+            logger.exception("Full traceback:")  # This will log the full stack trace
+            return ""
 
-    def enhance_with_context(self, text: str, context: str) -> str:
-        # Combine the original text with the retrieved context
-        return f"{context}\n{text}"
+    async def enhance_with_context(self, text_stream, context: str):
+        """Convert the enhanced text into an async generator to maintain stream compatibility"""
+        async def enhanced_stream():
+            # First yield the context
+            logger.info(f"Enhancing stream with context ({len(context)} chars)")
+            yield context + "\n"
+            
+            # Then yield the original stream contents
+            chunk_count = 0
+            total_chars = 0
+            if hasattr(text_stream, '__aiter__'):
+                logger.info("Streaming original content from async iterator...")
+                async for chunk in text_stream:
+                    chunk_count += 1
+                    total_chars += len(chunk)
+                    logger.debug(f"Yielding chunk {chunk_count} ({len(chunk)} chars)")
+                    yield chunk
+            else:
+                text = str(text_stream)
+                logger.info(f"Yielding original content as single string ({len(text)} chars)")
+                yield text
+                
+            logger.info(f"Stream enhancement complete. Total: {chunk_count} chunks, {total_chars} chars")
+                
+        return enhanced_stream()
 
     def start(self, room: rtc.Room, participant: rtc.RemoteParticipant | str | None = None) -> None:
         super().start(room, participant)
 
         @self._session.on("response_content_added")
-        def _on_content_added(message: realtime.RealtimeContent):
+        async def _on_content_added(message: realtime.RealtimeContent):
+            logger.info("Processing new response content...")
+            
             # Retrieve and enhance context
-            context = self.retrieve_context_from_pinecone(message.text_stream)
-            enhanced_text_stream = self.enhance_with_context(message.text_stream, context)
+            logger.info("Retrieving context from Pinecone...")
+            context = await self.retrieve_context_from_pinecone(message.text_stream)
+            
+            logger.info("Enhancing text stream with retrieved context...")
+            enhanced_text_stream = await self.enhance_with_context(message.text_stream, context)
 
-            # Forward the enhanced text stream
+            logger.info("Setting up transcription forwarder...")
             tr_fwd = transcription.TTSSegmentsForwarder(
                 room=self._room,
                 participant=self._room.local_participant,
@@ -344,6 +415,7 @@ class CustomMultimodalAgent(MultimodalAgent):
                 hyphenate_word=self._opts.transcription.hyphenate_word,
             )
 
+            logger.info("Initiating playout with enhanced stream...")
             self._playing_handle = self._agent_playout.play(
                 item_id=message.item_id,
                 content_index=message.content_index,
@@ -351,3 +423,4 @@ class CustomMultimodalAgent(MultimodalAgent):
                 text_stream=enhanced_text_stream,
                 audio_stream=message.audio_stream,
             )
+            logger.info("Playout initiated successfully")

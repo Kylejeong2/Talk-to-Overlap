@@ -1,21 +1,34 @@
-from flask import Flask, jsonify, request
-from youtube_transcript_api import YouTubeTranscriptApi
 import os
-import openai
-import pinecone
-from dotenv import load_dotenv
 import uuid
-from datetime import datetime
+
+import openai
+from dotenv import load_dotenv
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+from pinecone import Pinecone
+from youtube_transcript_api import YouTubeTranscriptApi
 
 app = Flask(__name__)
+# Update CORS configuration
+CORS(app, resources={
+    r"/*": {
+        "origins": [
+            "http://localhost:3000",  # Development
+            "https://your-production-domain.com"  # Prod
+        ],
+        "methods": ["POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"],
+        "max_age": 3600
+    }
+})
 
 # Load environment variables
 load_dotenv()
 
 # Initialize OpenAI and Pinecone
-openai.api_key = os.getenv("OPENAI_API_KEY")
-pinecone.init(api_key=os.getenv("PINECONE_API_KEY"), environment=os.getenv("PINECONE_ENVIRONMENT"))
-index = pinecone.Index(os.getenv("PINECONE_INDEX"))
+openai.api_key = os.getenv("OPENAI_API_KEY_EMBEDDINGS")
+pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
+index = pc.Index(os.getenv("PINECONE_INDEX"))
 
 @app.route('/transcript', methods=['POST'])
 def get_transcript():
@@ -33,29 +46,47 @@ def get_transcript():
 
 @app.route('/process_video', methods=['POST'])
 def process_video():
+    print("Received request for /process_video")  
     data = request.get_json()
     video_id = data.get('videoId')
     if not video_id:
         return jsonify({"error": "Missing video_id in request body"}), 400
 
     try:
-        # Fetch transcript using YouTube API or similar
-        transcript_response = get_transcript(video_id)
-        transcript = transcript_response.get_json().get('transcript')
-
-        # Process transcript to generate embeddings
+        # Get transcript
+        transcript = YouTubeTranscriptApi.get_transcript(video_id)
+        
+        # Generate embeddings and store in Pinecone
         for entry in transcript:
             sentence = entry['text']
             timestamp = entry['start']
             duration = entry['duration']
-            response = openai.Embedding.create(input=sentence, model="text-large-3")
-            embedding = response['data'][0]['embedding']
+            # Updated embedding creation using new OpenAI client
+            response = openai.embeddings.create(
+                model="text-embedding-3-large",
+                input=sentence
+            )
+            embedding = response.data[0].embedding
             
-            # Upsert to Pinecone with namespace
             namespace = f"overlap_{video_id}_embeddings"
             index.upsert([(str(uuid.uuid4()), embedding, {"timestamp": timestamp, "duration": duration})], namespace=namespace)
 
-        return jsonify({"status": "success"}), 200
+        # Generate summary using OpenAI - updated to new client format
+        full_transcript = ' '.join([entry['text'] for entry in transcript])
+        summary_response = openai.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You are an expert at summarizing and you write elaborate and info-packed summarizes with all the key insights and including all the important concepts from text. Write the summary in exactly 10 sentences."},
+                {"role": "user", "content": full_transcript}
+            ]
+        )
+        summary = summary_response.choices[0].message.content
+
+        return jsonify({
+            "status": "success",
+            "transcript": transcript,
+            "summary": summary
+        }), 200
     except Exception as e:
         print(f"Error processing video: {e}")
         return jsonify({"error": "Failed to process video"}), 500

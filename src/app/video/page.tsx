@@ -4,29 +4,65 @@ import React, { useState, useEffect } from 'react';
 import Video from '@/components/videopage/video';
 import { RoomComponent } from '@/components/videopage/room-component';
 import { VideoProvider } from '@/hooks/VideoContext';
+import { useSearchParams } from 'next/navigation';
+import { useTranscript } from '@/hooks/TranscriptContext';
 
-type Props = {
-  videoId: string;
-}
-const VideoPage = ({ videoId  }: Props) => {
+const VideoPage = () => {
     const [loading, setLoading] = useState(true);
+    const [transcript, setTranscript] = useState([]);
+    const searchParams = useSearchParams();
+    const url = searchParams.get('url');
+    const videoId = url ? extractVideoId(url) : null;
+    const { setSummary } = useTranscript();
 
     useEffect(() => {
-        // Start processing video link
-        processVideoLink(videoId).then(() => {
-            setLoading(false); // Set loading to false when embeddings are ready
-        });
-    }, [videoId]);
+        const processVideo = async () => {
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/process_video`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ videoId }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to process video');
+                }
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    setTranscript(data.transcript);
+                    setSummary(data.summary);
+                    setLoading(false);
+                } else {
+                    throw new Error('Processing failed');
+                }
+            } catch (error) {
+                console.error('Error processing video:', error);
+                setLoading(false);
+            }
+        };
+
+        if (videoId) {
+            processVideo();
+        }
+    }, [videoId, setSummary]);
 
     return (
         <VideoProvider>
             <div className="min-h-screen bg-gradient-to-br max-h-screen from-orange-50 via-red-50 to-orange-100">
                 {loading ? (
-                    <div className="spinner">Loading...</div>
+                    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+                        <div>
+                          Coming Soon
+                        </div>
+                        <div className="w-16 h-16 border-4 border-gray-200 border-t-orange-500 rounded-full animate-spin"></div>
+                    </div>
                 ) : (
                     <div className="max-w-full mx-auto flex">
                         <div className="w-1/2 max-h-screen p-2">
-                            <Video url={videoId} />
+                            <Video url={url} transcript={transcript} />
                         </div>
                         <div className='w-1/2 max-h-screen p-2'>
                             <RoomComponent />
@@ -40,25 +76,7 @@ const VideoPage = ({ videoId  }: Props) => {
 
 export default VideoPage;
 
-async function processVideoLink(videoId: string) {
-    try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/process_video`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ videoId }),
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to process video');
-        }
-
-        const data = await response.json();
-        if (data.status !== 'success') {
-            throw new Error('Processing failed');
-        }
-    } catch (error) {
-        console.error('Error processing video link:', error);
-    }
+function extractVideoId(url: string) {
+  const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(.+)/);
+  return match ? match[1] : null;
 }

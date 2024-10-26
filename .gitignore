@@ -32,6 +32,7 @@ yarn-error.log*
 server/venv/
 server/node_modules
 server/env
+server/__pycache__
 # vercel
 .vercel
 

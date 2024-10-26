@@ -14,7 +14,13 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (url) {
-      router.push(`/video?url=${encodeURIComponent(url)}`)
+      try {
+        const encodedUrl = encodeURIComponent(url)
+        router.push(`/video?url=${encodedUrl}`)
+        router.refresh()
+      } catch (error) {
+        console.error('Navigation error:', error)
+      }
     }
   }
 
