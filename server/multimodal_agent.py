@@ -395,32 +395,37 @@ class CustomMultimodalAgent(MultimodalAgent):
         super().start(room, participant)
 
         @self._session.on("response_content_added")
-        async def _on_content_added(message: realtime.RealtimeContent):
-            logger.info("Processing new response content...")
-            
-            # Retrieve and enhance context
-            logger.info("Retrieving context from Pinecone...")
-            context = await self.retrieve_context_from_pinecone(message.text_stream)
-            
-            logger.info("Enhancing text stream with retrieved context...")
-            enhanced_text_stream = await self.enhance_with_context(message.text_stream, context)
+        def _on_content_added(message: realtime.RealtimeContent):
+            # Create and run the async task
+            asyncio.create_task(self._handle_content_added(message))
+    
+    async def _handle_content_added(self, message: realtime.RealtimeContent):
+        """Separate async handler for content added events"""
+        logger.info("Processing new response content...")
+        
+        # Retrieve and enhance context
+        logger.info("Retrieving context from Pinecone...")
+        context = await self.retrieve_context_from_pinecone(message.text_stream)
+        
+        logger.info("Enhancing text stream with retrieved context...")
+        enhanced_text_stream = await self.enhance_with_context(message.text_stream, context)
 
-            logger.info("Setting up transcription forwarder...")
-            tr_fwd = transcription.TTSSegmentsForwarder(
-                room=self._room,
-                participant=self._room.local_participant,
-                speed=self._opts.transcription.agent_transcription_speed,
-                sentence_tokenizer=self._opts.transcription.sentence_tokenizer,
-                word_tokenizer=self._opts.transcription.word_tokenizer,
-                hyphenate_word=self._opts.transcription.hyphenate_word,
-            )
+        logger.info("Setting up transcription forwarder...")
+        tr_fwd = transcription.TTSSegmentsForwarder(
+            room=self._room,
+            participant=self._room.local_participant,
+            speed=self._opts.transcription.agent_transcription_speed,
+            sentence_tokenizer=self._opts.transcription.sentence_tokenizer,
+            word_tokenizer=self._opts.transcription.word_tokenizer,
+            hyphenate_word=self._opts.transcription.hyphenate_word,
+        )
 
-            logger.info("Initiating playout with enhanced stream...")
-            self._playing_handle = self._agent_playout.play(
-                item_id=message.item_id,
-                content_index=message.content_index,
-                transcription_fwd=tr_fwd,
-                text_stream=enhanced_text_stream,
-                audio_stream=message.audio_stream,
-            )
-            logger.info("Playout initiated successfully")
+        logger.info("Initiating playout with enhanced stream...")
+        self._playing_handle = self._agent_playout.play(
+            item_id=message.item_id,
+            content_index=message.content_index,
+            transcription_fwd=tr_fwd,
+            text_stream=enhanced_text_stream,
+            audio_stream=message.audio_stream,
+        )
+        logger.info("Playout initiated successfully")

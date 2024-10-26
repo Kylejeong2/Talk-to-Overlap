@@ -69,9 +69,8 @@ def process_video():
             embedding = response.data[0].embedding
             
             namespace = f"overlap_{video_id}_embeddings"
-            index.upsert([(str(uuid.uuid4()), embedding, {"timestamp": timestamp, "duration": duration})], namespace=namespace)
+            index.upsert([(str(uuid.uuid4()), embedding, {"timestamp": timestamp, "duration": duration, "content": sentence})], namespace=namespace)
 
-        # Generate summary using OpenAI - updated to new client format
         full_transcript = ' '.join([entry['text'] for entry in transcript])
         summary_response = openai.chat.completions.create(
             model="gpt-4o",
@@ -87,6 +86,7 @@ def process_video():
             "transcript": transcript,
             "summary": summary
         }), 200
+        
     except Exception as e:
         print(f"Error processing video: {e}")
         return jsonify({"error": "Failed to process video"}), 500

@@ -6,6 +6,7 @@ import { RoomComponent } from '@/components/videopage/room-component';
 import { VideoProvider } from '@/hooks/VideoContext';
 import { useSearchParams } from 'next/navigation';
 import { useTranscript } from '@/hooks/TranscriptContext';
+import { CaptionItem } from '@/types/interfaces';
 
 const VideoPage = () => {
     const [loading, setLoading] = useState(true);
@@ -66,7 +67,7 @@ const VideoPage = () => {
                 ) : (
                     <div className="max-w-full mx-auto flex">
                         <div className="w-1/2 max-h-screen p-2">
-                            <Video url={url} transcript={transcript} />
+                            <Video url={url} transcript={transcript as CaptionItem[]} />
                         </div>
                         <div className='w-1/2 max-h-screen p-2'>
                             <RoomComponent />

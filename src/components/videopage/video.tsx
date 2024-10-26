@@ -4,11 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import YouTube from 'react-youtube';
 import Captions from './captions';
 import { useVideo } from '@/hooks/VideoContext';
-
-interface VideoProps {
-  url: string | null;
-  transcript: string[] | null;
-}
+import { CaptionItem, VideoProps } from '@/types/interfaces';
 
 export default function Video({ url, transcript }: VideoProps) {
   const [videoId, setVideoId] = useState('');
@@ -105,7 +101,7 @@ export default function Video({ url, transcript }: VideoProps) {
         )}
       </div>
       <div className="flex-1 overflow-hidden">
-        {videoId && <Captions videoId={videoId} currentTime={currentTime} transcript={transcript}/>}
+        {videoId && <Captions videoId={videoId} currentTime={currentTime} transcript={transcript as CaptionItem[]}/>}
       </div>
     </div>
   );
